@@ -35,6 +35,20 @@ TEST_F(HashTableTest, ClearTable){
     EXPECT_EQ(hashTable.size(), 0);
 }
 
+TEST_F(HashTableTest, Resize){
+    size_t resizeThresholdCapacity = static_cast<size_t>(hashTable.initialCapacity() * HashTable<std::string, int>::LOAD_FACTOR_THRESHOLD);
+    for(size_t i = 0; i < resizeThresholdCapacity; ++i){
+        hashTable.insert(std::to_string(i), i);
+    }
+
+    size_t capacityBeforeResize = hashTable.capacity();
+    hashTable.insert("overflow", 1);
+    size_t expectedNewCapacity = capacityBeforeResize * HashTable<std::string,int>::RESIZE_FACTOR;
+    EXPECT_EQ(hashTable.capacity(), expectedNewCapacity);
+
+}
+
+
 int main(int argc, char ** argv){
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
