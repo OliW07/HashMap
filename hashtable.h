@@ -71,14 +71,20 @@ private:
 public:
 	HashTable() { data_.resize(capacity_); }
 
-
     bool contains(K key){
-        // TODO collision logic
-        Bucket *bucket = &data_[getIndex(key)];
-        return bucket->state == State::occupied && 
-                bucket->hash == std::hash<K>{}(key) &&
-                bucket->key == key;
 
+        size_t index = getIndex(key);
+        const Bucket *bucket = &data_[index];
+
+        while(bucket->state == State::Occupied){
+            if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
+                return true;
+
+            // Linearly search for next avaliable bucket
+            index = (index + 1) & (capacity_ - 1);
+            bucket = &data_[index];
+        }
+        return false;
     }
     void insert(K key, V value) {
         if(contains(key))
@@ -106,12 +112,20 @@ public:
         
     }
     const V& at(K key) const {
-        if(!contains(key))
-            throw std::out_of_range("Cannot return value for an undefined key");
 
-        // TODO collision resolution
+        size_t index = getIndex(index);
+        Bucket *bucket = &data_[index];
+        
+        while(bucket->state == State::Occupied){
+            if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
+                return bucket->value;
 
-        return data_[getIndex(key)].value;
+            // Linearly search for next avaliable bucket
+            index = (index + 1) & (capacity_ - 1);
+            bucket = &data_[index];
+        }
+
+        throw std::out_of_range("Cannot return value for an undefined key");
     }
 };
 
