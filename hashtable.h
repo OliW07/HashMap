@@ -45,8 +45,19 @@ private:
 
         for(Bucket &bucket : data_){
 
+            if(bucket.state != State::occupied) continue;
+
             bucket.hash = std::hash<K>{}(bucket.key);
-            newData[getIndex(bucket.hash)] = std::move(bucket);
+            size_t index = getIndex(bucket.hash);
+            Bucket *newBucket = &newData[index];
+
+            while(newBucket->state == State::occupied){
+                index = (index + 1) & (capacity_ - 1);
+                newBucket = &newData[index];
+            }
+
+            newData[index] = std::move(bucket);
+
 
         }
 
@@ -58,11 +69,16 @@ private:
     }
 
 public:
-	HashTable() { data_.reserve(capacity_); }
+	HashTable() { data_.resize(capacity_); }
 
 
     bool contains(K key){
-        return 1;
+        // TODO collision logic
+        Bucket *bucket = &data_[getIndex(key)];
+        return bucket->state == State::occupied && 
+                bucket->hash == std::hash<K>{}(key) &&
+                bucket->key == key;
+
     }
     void insert(K key, V value) {
         if(contains(key))
@@ -70,29 +86,32 @@ public:
         
         if(size_ + 1 > capacity_ * LOAD_FACTOR_THRESHOLD)
             resize();
-        
+
+        size_++;
 
         size_t index = getIndex(key);
-        Bucket &bucket = data_[index];
+        Bucket *bucket = &data_[index];
         
-        while(bucket.state == State::occupied) {
+        while(bucket->state == State::occupied) {
 
             // Linearly search for next avaliable bucket
-            size_t nextIndex = (index + 1) & (capacity_ - 1);
-            bucket = data_[nextIndex];
+            index = (index + 1) & (capacity_ - 1);
+            bucket = &data_[index];
         }
 
-        bucket.state = State::occupied;
-        bucket.hash = std::hash<K>{}(key);
-        bucket.key = key;
-        bucket.value = value;
+        bucket->state = State::occupied;
+        bucket->hash = std::hash<K>{}(key);
+        bucket->key = key;
+        bucket->value = value;
         
     }
     const V& at(K key) const {
         if(!contains(key))
             throw std::out_of_range("Cannot return value for an undefined key");
 
-        return data_[getIndex(key)];
+        // TODO collision resolution
+
+        return data_[getIndex(key)].value;
     }
 };
 
