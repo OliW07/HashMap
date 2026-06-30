@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bit>
+#include <gtest/gtest_prod.h>
 #include <stdexcept>
 #include <vector>
 #include <concepts>
@@ -25,18 +26,19 @@ private:
 
     static constexpr float LOAD_FACTOR_THRESHOLD = 0.7f;
     static constexpr float RESIZE_FACTOR = 2.0;
-    static constexpr size_t INITIAL_CAPACITY = 1 << 4;
-    static_assert(std::has_single_bit(INITIAL_CAPACITY), "INITIAL_CAPACITY must be a power of two");
+    static constexpr size_t DEFAULT_CAPACITY = 1 << 4;
+    static_assert(std::has_single_bit(DEFAULT_CAPACITY), "DEFAULT_CAPACITY must be a power of two");
+    const size_t INITIAL_CAPACITY;
 
-	size_t capacity_ = INITIAL_CAPACITY;
+	size_t capacity_ = DEFAULT_CAPACITY;
     size_t size_ = 0;
 	std::vector<Bucket> data_;
 
-    size_t getIndex(K key) {
+    size_t getIndex(K key) const {
         size_t hash = std::hash<K>{}(key);
         return hash & (capacity_ - 1);
     }
-    size_t getIndex(size_t hash){
+    size_t getIndex(size_t hash) const {
         return hash & (capacity_ - 1);
     }
 
@@ -72,7 +74,12 @@ private:
     }
 
 public:
-	HashTable() { data_.resize(capacity_); }
+    HashTable(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY(capacity){
+        if(!std::has_single_bit(capacity))
+            throw std::runtime_error("Capacity must be a power of two");
+        
+        data_.resize(capacity_);
+    }
 
     size_t size() { return size_; }
     size_t capacity() { return capacity_; }
@@ -82,7 +89,7 @@ public:
         size_t index = getIndex(key);
         const Bucket *bucket = &data_[index];
 
-        while(bucket->state == State::Occupied){
+        while(bucket->state == State::occupied){
             if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
                 return true;
 
@@ -126,10 +133,10 @@ public:
     }
     const V& at(K key) const {
 
-        size_t index = getIndex(index);
-        Bucket *bucket = &data_[index];
+        size_t index = getIndex(key);
+        const Bucket *bucket = &data_[index];
         
-        while(bucket->state == State::Occupied){
+        while(bucket->state == State::occupied){
             if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
                 return bucket->value;
 
