@@ -57,10 +57,31 @@ public:
 	HashTable() { data_.reserve(capacity_); }
 
 
+    bool contains(K key){
+        return 1;
+    }
     void insert(K key, V value) {
-        if(size_ + 1 > capacity_ * LOAD_FACTOR_THRESHOLD){
+        if(contains(key))
+            throw std::runtime_error("Cannot insert duplciate key");
+        
+        if(size_ + 1 > capacity_ * LOAD_FACTOR_THRESHOLD)
             resize();
+        
+
+        size_t index = getIndex(key);
+        Bucket &bucket = data_[index];
+        
+        while(bucket.state == State::occupied) {
+
+            // Linearly search for next avaliable bucket
+            size_t nextIndex = (index + 1) & (capacity_ - 1);
+            bucket = data_[nextIndex];
         }
+
+        bucket.state = State::occupied;
+        bucket.hash = std::hash<K>{}(key);
+        bucket.key = key;
+        bucket.value = value;
         
     }
     const V& at(K key) const {
