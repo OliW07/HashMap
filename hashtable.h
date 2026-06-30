@@ -43,14 +43,18 @@ private:
         std::vector<Bucket> newData;
         newData.resize(capacity_);
 
-        for(const Bucket &bucket : data_){
+        for(Bucket &bucket : data_){
 
-            bucket.hash = std::hash<K>{}(bucket->key);
+            bucket.hash = std::hash<K>{}(bucket.key);
             newData[getIndex(bucket.hash)] = std::move(bucket);
 
         }
 
         data_ = std::move(newData);
+    }
+    
+    void resize(){
+        resize(capacity_ * 2);
     }
 
 public:
