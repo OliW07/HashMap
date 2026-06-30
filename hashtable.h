@@ -25,6 +25,7 @@ private:
 	size_t capacity_ = 1 << 4;
     size_t size_ = 0;
     const float LOAD_FACTOR_THRESHOLD = 0.7;
+    const float RESIZE_FACTOR = 2.0;
 	std::vector<Bucket> data_;
 
     size_t getIndex(K key) {
@@ -65,10 +66,6 @@ private:
 
         data_ = std::move(newData);
     }
-    
-    void resize(){
-        resize(capacity_ * 2);
-    }
 
 public:
 	HashTable() { data_.resize(capacity_); }
@@ -93,7 +90,7 @@ public:
             throw std::runtime_error("Cannot insert duplciate key");
         
         if(size_ + 1 > capacity_ * LOAD_FACTOR_THRESHOLD)
-            resize();
+            resize(size_t(capacity_ * RESIZE_FACTOR));
 
         size_++;
 
