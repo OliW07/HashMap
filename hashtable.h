@@ -74,6 +74,9 @@ private:
 public:
 	HashTable() { data_.resize(capacity_); }
 
+    size_t size() { return size_; }
+    size_t capacity() { return capacity_; }
+
     bool contains(K key){
 
         size_t index = getIndex(key);
