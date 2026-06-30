@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include <stdexcept>
 #include <vector>
 #include <concepts>
@@ -22,10 +23,13 @@ private:
         State state;
     };
 
+    static constexpr float LOAD_FACTOR_THRESHOLD = 0.7f;
+    static constexpr float RESIZE_FACTOR = 2.0;
+    static constexpr size_t INITIAL_CAPACITY = 1 << 4;
+    static_assert(std::has_single_bit(INITIAL_CAPACITY), "INITIAL_CAPACITY must be a power of two");
+
 	size_t capacity_ = 1 << 4;
     size_t size_ = 0;
-    const float LOAD_FACTOR_THRESHOLD = 0.7;
-    const float RESIZE_FACTOR = 2.0;
 	std::vector<Bucket> data_;
 
     size_t getIndex(K key) {
