@@ -1,4 +1,6 @@
 *.out
 *.txt
 
+build/*
+
 main.cpp
