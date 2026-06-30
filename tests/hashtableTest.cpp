@@ -1,9 +1,6 @@
 #include <gtest/gtest.h>
+#include <stdexcept>
 #include "../hashtable.h"
-
-
-template <typename K, typename V>
-requires Hashable<K>
 
 class HashTableTest : public testing::Test {
     protected:
@@ -11,9 +8,32 @@ class HashTableTest : public testing::Test {
             hashTable.clear();
         }
 
-        HashTable<K,V> hashTable;
+        HashTable<std::string, int> hashTable;
 };
 
+TEST_F(HashTableTest, IsEmptyInitially){
+    EXPECT_EQ(hashTable.size(), 0);
+}
+
+TEST_F(HashTableTest, InsertCheck){
+    hashTable.insert("Apples", 10);
+    EXPECT_EQ(hashTable.at("Apples"), 10);
+    EXPECT_EQ(hashTable.contains("Apples"), true);
+}
+
+TEST_F(HashTableTest, DuplicateKeyThrow){
+    hashTable.insert("Orange", 5);
+    EXPECT_THROW(hashTable.insert("Orange", 10), std::runtime_error);
+}
+
+TEST_F(HashTableTest, ClearTable){
+    hashTable.insert("Banana", 69);
+    hashTable.insert("Apple", 21);
+    hashTable.clear();
+    EXPECT_EQ(hashTable.contains("Apple"), false);
+    EXPECT_EQ(hashTable.contains("Banana"), false);
+    EXPECT_EQ(hashTable.size(), 0);
+}
 
 int main(int argc, char ** argv){
     testing::InitGoogleTest(&argc, argv);
