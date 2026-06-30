@@ -15,6 +15,8 @@ template <typename K, typename V>
 requires Hashable<K>
 
 class HashTable {
+    FRIEND_TEST(HashTableTest, Resize);
+
 private:
     enum class State { empty, occupied, deleted };
     struct Bucket {
@@ -28,7 +30,7 @@ private:
     static constexpr float RESIZE_FACTOR = 2.0;
     static constexpr size_t DEFAULT_CAPACITY = 1 << 4;
     static_assert(std::has_single_bit(DEFAULT_CAPACITY), "DEFAULT_CAPACITY must be a power of two");
-    const size_t INITIAL_CAPACITY;
+    const size_t INITIAL_CAPACITY_;
 
 	size_t capacity_ = DEFAULT_CAPACITY;
     size_t size_ = 0;
@@ -74,15 +76,16 @@ private:
     }
 
 public:
-    HashTable(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY(capacity){
+    HashTable(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity){
         if(!std::has_single_bit(capacity))
             throw std::runtime_error("Capacity must be a power of two");
         
         data_.resize(capacity_);
     }
 
-    size_t size() { return size_; }
-    size_t capacity() { return capacity_; }
+    size_t size() const { return size_; }
+    size_t capacity() const { return capacity_; }
+    size_t initialCapacity() const { return INITIAL_CAPACITY_; }
 
     bool contains(K key){
 
@@ -103,7 +106,7 @@ public:
         if(contains(key))
             throw std::runtime_error("Cannot insert duplciate key");
         
-        if(size_ + 1 > capacity_ * LOAD_FACTOR_THRESHOLD)
+        if(size_ + 1 > (float)capacity_ * LOAD_FACTOR_THRESHOLD)
             resize(size_t(capacity_ * RESIZE_FACTOR));
 
         size_++;
@@ -126,9 +129,9 @@ public:
     }
 
     void clear() {
-        data_.resize(INITIAL_CAPACITY);
+        data_.resize(INITIAL_CAPACITY_);
         data_.shrink_to_fit();
-        capacity_ = INITIAL_CAPACITY;
+        capacity_ = INITIAL_CAPACITY_;
         size_ = 0;
     }
     const V& at(K key) const {
