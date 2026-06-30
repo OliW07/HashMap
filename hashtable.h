@@ -89,6 +89,9 @@ public:
         
     }
     const V& at(K key) const {
+        if(!contains(key))
+            throw std::out_of_range("Cannot return value for an undefined key");
+
         return data_[getIndex(key)];
     }
 };
