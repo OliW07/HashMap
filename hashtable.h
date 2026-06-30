@@ -28,7 +28,7 @@ private:
     static constexpr size_t INITIAL_CAPACITY = 1 << 4;
     static_assert(std::has_single_bit(INITIAL_CAPACITY), "INITIAL_CAPACITY must be a power of two");
 
-	size_t capacity_ = 1 << 4;
+	size_t capacity_ = INITIAL_CAPACITY;
     size_t size_ = 0;
 	std::vector<Bucket> data_;
 
@@ -113,6 +113,13 @@ public:
         bucket->key = key;
         bucket->value = value;
         
+    }
+
+    void clear() {
+        data_.resize(INITIAL_CAPACITY);
+        data_.shrink_to_fit();
+        capacity_ = INITIAL_CAPACITY;
+        size_ = 0;
     }
     const V& at(K key) const {
 
