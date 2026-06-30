@@ -129,6 +129,9 @@ public:
     }
 
     void clear() {
+        for(Bucket &bucket : data_)
+            bucket.state = State::empty;
+        
         data_.resize(INITIAL_CAPACITY_);
         data_.shrink_to_fit();
         capacity_ = INITIAL_CAPACITY_;
