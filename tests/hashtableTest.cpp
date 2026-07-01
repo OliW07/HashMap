@@ -48,6 +48,16 @@ TEST_F(HashTableTest, Resize){
 
 }
 
+TEST_F(HashTableTest, SquareBrackets){
+    hashTable["Apples"] = 10;
+    ASSERT_EQ(hashTable.at("Apples"), 10);
+    ASSERT_EQ(hashTable["Apples"], 10);
+
+    hashTable["Apples"]++;
+    ASSERT_EQ(hashTable.at("Apples"), 11);
+    ASSERT_EQ(hashTable["Apples"], 11);
+}
+
 
 int main(int argc, char ** argv){
     testing::InitGoogleTest(&argc, argv);
