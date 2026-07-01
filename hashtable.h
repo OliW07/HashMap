@@ -1,7 +1,6 @@
 #pragma once
 
 #include <bit>
-#include <gtest/gtest_prod.h>
 #include <stdexcept>
 #include <vector>
 #include <concepts>
@@ -15,7 +14,7 @@ template <typename K, typename V>
 requires Hashable<K>
 
 class HashTable {
-    FRIEND_TEST(HashTableTest, Resize);
+    friend class HashTableTest_Resize_Test;
 
 private:
     enum class State { empty, occupied, deleted };
@@ -87,10 +86,14 @@ public:
     size_t capacity() const { return capacity_; }
     size_t initialCapacity() const { return INITIAL_CAPACITY_; }
 
-    bool contains(K key){
+    bool contains(K key) const {
 
         size_t index = getIndex(key);
         const Bucket *bucket = &data_[index];
+
+        /* If for some reason when the capacity is passed the LOAD_FACTOR_THRESHOLD
+         * the data_ is not resized with an increased capacity, leaving the table to be
+         * completely fully, this could result in an infinite loop. */
 
         while(bucket->state == State::occupied){
             if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
