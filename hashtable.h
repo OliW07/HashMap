@@ -76,7 +76,7 @@ private:
     }
 
 public:
-    HashTable(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity){
+    HashTable(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity), capacity_(capacity){
         if(!std::has_single_bit(capacity))
             throw std::runtime_error("Capacity must be a power of two");
         
