@@ -46,11 +46,11 @@ private:
     }
 
     const Bucket* findEntry(size_t hash, const K& key) const {
-        size_t index = hash & (capacity_ - 1);
+        size_t index = getIndex(hash);
         while (data_[index].state != State::empty) {
             if (data_[index].state == State::occupied &&
-                data_[index].hash == hash &&
-                data_[index].key == key)
+                    data_[index].hash == hash &&
+                    data_[index].key == key)
                 return &data_[index];
             index = (index + 1) & (capacity_ - 1);
         }
