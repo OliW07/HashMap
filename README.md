@@ -1,5 +1,7 @@
 # hash-table
 
+[![CI](https://github.com/OliW07/HashMap/actions/workflows/ci.yml/badge.svg)](https://github.com/OliW07/HashMap/actions)
+
 Open-addressing hash map built as a learning exercise. Still in development.
 
 ## Design decisions
