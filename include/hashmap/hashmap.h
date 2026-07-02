@@ -4,6 +4,9 @@
 #include <stdexcept>
 #include <vector>
 #include <concepts>
+#include <format>
+
+#include "detail/states.h"
 
 template <typename T> 
 concept Hashable = requires(T a){
@@ -17,7 +20,7 @@ class HashMap {
     friend class HashMapTest_Resize_Test;
 
 private:
-    enum class State { empty, occupied, deleted };
+    
     struct Bucket {
         size_t hash;
         K key;
@@ -43,6 +46,40 @@ private:
         return hash & (capacity_ - 1);
     }
 
+    static Bucket findBucket(const std::vector<Bucket> &data, size_t capacity, const K &key, StateSet targetStates){
+        size_t hash = std::hash<K>{}(key);
+        size_t startIndex = hash & (capacity - 1);
+        size_t index = startIndex;
+        Bucket bucket = &data[index];
+
+        auto foundTargetBucket = [&]() -> bool {
+
+            if(!targetStates.contains(State::occupied))
+                return targetStates.contains(bucket.state);
+
+            return bucket.hash == hash && bucket.key = key;
+
+        };
+
+        while(!foundTargetBucket()){
+
+            index = (index + 1) & (capacity - 1);
+            bucket = data[index];
+            if(index == startIndex)
+                throw std::runtime_error(std::format("No bucket matching the any of the following states: {}", targetStates.format()));
+        }
+
+        return bucket;
+    }
+
+    Bucket findBucket(const K &key, StateSet targetStates){
+       return findBucket(data_, capacity_, key, targetStates);
+    }
+
+    const Bucket findBucket(const K &key, StateSet targetStates) const {
+       return findBucket(data_, capacity_, key, targetStates);
+    }
+
     void resize(size_t capacity){
         if(capacity <= capacity_){
             throw std::logic_error("Must resize to a capacity larger than current capacity");
@@ -58,15 +95,8 @@ private:
             if(bucket.state != State::occupied) continue;
 
             bucket.hash = std::hash<K>{}(bucket.key);
-            size_t index = getIndex(bucket.hash);
-            Bucket *newBucket = &newData[index];
-
-            while(newBucket->state == State::occupied){
-                index = (index + 1) & (capacity_ - 1);
-                newBucket = &newData[index];
-            }
-
-            newData[index] = std::move(bucket);
+            Bucket nextEmpty = findBucket(bucket.key, {State::empty, State::deleted});
+            nextEmpty = std::move(bucket);
 
 
         }
@@ -156,5 +186,6 @@ public:
 
         throw std::out_of_range("Cannot return value for an undefined key");
     }
+
 };
 

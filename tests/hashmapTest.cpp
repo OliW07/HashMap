@@ -58,8 +58,8 @@ TEST_F(HashMapTest, SquareBrackets){
     ASSERT_EQ(hashMap.at("Apples"), 11);
     ASSERT_EQ(hashMap["Apples"], 11);
     */
-}
 
+}
 
 int main(int argc, char ** argv){
     testing::InitGoogleTest(&argc, argv);
