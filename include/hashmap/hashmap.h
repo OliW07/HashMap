@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <vector>
 #include <concepts>
-#include <format>
 
 #include "detail/states.h"
 
@@ -25,7 +24,7 @@ private:
         size_t hash;
         K key;
         V value;
-        State state;
+        State state = State::empty;
     };
 
     static constexpr float LOAD_FACTOR_THRESHOLD = 0.7f;
@@ -46,38 +45,23 @@ private:
         return hash & (capacity_ - 1);
     }
 
-    static Bucket findBucket(const std::vector<Bucket> &data, size_t capacity, const K &key, StateSet targetStates){
-        size_t hash = std::hash<K>{}(key);
-        size_t startIndex = hash & (capacity - 1);
-        size_t index = startIndex;
-        Bucket bucket = &data[index];
-
-        auto foundTargetBucket = [&]() -> bool {
-
-            if(!targetStates.contains(State::occupied))
-                return targetStates.contains(bucket.state);
-
-            return bucket.hash == hash && bucket.key = key;
-
-        };
-
-        while(!foundTargetBucket()){
-
-            index = (index + 1) & (capacity - 1);
-            bucket = data[index];
-            if(index == startIndex)
-                throw std::runtime_error(std::format("No bucket matching the any of the following states: {}", targetStates.format()));
+    const Bucket* findEntry(size_t hash, const K& key) const {
+        size_t index = hash & (capacity_ - 1);
+        while (data_[index].state != State::empty) {
+            if (data_[index].state == State::occupied &&
+                data_[index].hash == hash &&
+                data_[index].key == key)
+                return &data_[index];
+            index = (index + 1) & (capacity_ - 1);
         }
-
-        return bucket;
+        return nullptr;
     }
 
-    Bucket findBucket(const K &key, StateSet targetStates){
-       return findBucket(data_, capacity_, key, targetStates);
-    }
-
-    const Bucket findBucket(const K &key, StateSet targetStates) const {
-       return findBucket(data_, capacity_, key, targetStates);
+    static Bucket* findSlot(Bucket* data, size_t capacity, size_t hash) {
+        size_t index = hash & (capacity - 1);
+        while (data[index].state == State::occupied)
+            index = (index + 1) & (capacity - 1);
+        return &data[index];
     }
 
     void resize(size_t capacity){
@@ -95,9 +79,8 @@ private:
             if(bucket.state != State::occupied) continue;
 
             bucket.hash = std::hash<K>{}(bucket.key);
-            Bucket nextEmpty = findBucket(bucket.key, {State::empty, State::deleted});
-            nextEmpty = std::move(bucket);
-
+            Bucket* slot = findSlot(newData.data(), capacity_, bucket.hash);
+            *slot = std::move(bucket);
 
         }
 
@@ -117,45 +100,22 @@ public:
     size_t initialCapacity() const { return INITIAL_CAPACITY_; }
 
     bool contains(K key) const {
-
-        size_t index = getIndex(key);
-        const Bucket *bucket = &data_[index];
-
-        /* If for some reason when the capacity is passed the LOAD_FACTOR_THRESHOLD
-         * the data_ is not resized with an increased capacity, leaving the table to be
-         * completely fully, this could result in an infinite loop. */
-
-        while(bucket->state == State::occupied){
-            if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
-                return true;
-
-            // Linearly search for next avaliable bucket
-            index = (index + 1) & (capacity_ - 1);
-            bucket = &data_[index];
-        }
-        return false;
+        size_t hash = std::hash<K>{}(key);
+        return findEntry(hash, key) != nullptr; 
     }
     void insert(K key, V value) {
-        if(contains(key))
+        size_t hash = std::hash<K>{}(key);
+        if(findEntry(hash, key))
             throw std::runtime_error("Cannot insert duplciate key");
         
         if(size_ + 1 > (float)capacity_ * LOAD_FACTOR_THRESHOLD)
             resize(size_t(capacity_ * RESIZE_FACTOR));
-
         size_++;
 
-        size_t index = getIndex(key);
-        Bucket *bucket = &data_[index];
-        
-        while(bucket->state == State::occupied) {
-
-            // Linearly search for next avaliable bucket
-            index = (index + 1) & (capacity_ - 1);
-            bucket = &data_[index];
-        }
+        Bucket *bucket = findSlot(data_.data(), capacity_, hash);
 
         bucket->state = State::occupied;
-        bucket->hash = std::hash<K>{}(key);
+        bucket->hash = hash;
         bucket->key = key;
         bucket->value = value;
         
@@ -171,21 +131,13 @@ public:
         size_ = 0;
     }
     const V& at(K key) const {
+        size_t hash = std::hash<K>{}(key);
+        const Bucket* bucket = findEntry(hash, key);
+                
+        if(!bucket)
+            throw std::out_of_range("Cannot return value for an undefined key");
 
-        size_t index = getIndex(key);
-        const Bucket *bucket = &data_[index];
-        
-        while(bucket->state == State::occupied){
-            if(bucket->hash == std::hash<K>{}(key) && bucket->key == key)
-                return bucket->value;
-
-            // Linearly search for next avaliable bucket
-            index = (index + 1) & (capacity_ - 1);
-            bucket = &data_[index];
-        }
-
-        throw std::out_of_range("Cannot return value for an undefined key");
+        return bucket->value;
     }
 
 };
-
