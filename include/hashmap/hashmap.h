@@ -13,8 +13,8 @@ concept Hashable = requires(T a){
 template <typename K, typename V>
 requires Hashable<K>
 
-class HashTable {
-    friend class HashTableTest_Resize_Test;
+class HashMap {
+    friend class HashMapTest_Resize_Test;
 
 private:
     enum class State { empty, occupied, deleted };
@@ -75,7 +75,7 @@ private:
     }
 
 public:
-    HashTable(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity), capacity_(capacity){
+    HashMap(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity), capacity_(capacity){
         if(!std::has_single_bit(capacity))
             throw std::runtime_error("Capacity must be a power of two");
         
