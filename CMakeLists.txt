@@ -14,9 +14,9 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(hashtable_test tests/hashtableTest.cpp)
-target_link_libraries(hashtable_test GTest::gtest_main)
-target_include_directories(hashtable_test PRIVATE ${CMAKE_SOURCE_DIR})
+add_executable(hashmapTest tests/hashmapTest.cpp)
+target_link_libraries(hashmapTest GTest::gtest_main)
+target_include_directories(hashmapTest PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 include(GoogleTest)
-gtest_discover_tests(hashtable_test)
+gtest_discover_tests(hashmapTest)

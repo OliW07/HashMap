@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include "../hashtable.h"
+#include "hashmap/hashmap.h"
 
 class HashTableTest : public testing::Test {
     protected:
