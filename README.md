@@ -1,4 +1,4 @@
-# hash-table
+# Hash Map
 
 [![CI](https://github.com/OliW07/HashMap/actions/workflows/ci.yml/badge.svg)](https://github.com/OliW07/HashMap/actions)
 
@@ -14,8 +14,27 @@ Open-addressing hash map in development, with emphasis on cache-locality perform
 
 **StateSet.** Currently unused after splitting the probe helpers, but kept in the tree for when tombstone-aware operations need flexible bucket matching (e.g. skipping deleted entries during iteration, or segmenting the table). I plan to use this to implement erase operations in a clean and readable, but still optimised way.
 
-## Not yet done
+## API
 
+### `HashMap<K, V>`
+
+Open-addressing hash map with linear probing and power-of-two capacity.
+
+| Method | Description |
+|---|---|
+| `size_t size() const` | Number of key-value pairs stored |
+| `size_t capacity() const` | Current backing-array length |
+| `size_t initialCapacity() const` | Original capacity passed at construction |
+| `bool contains(K key) const` | Returns `true` if `key` exists |
+| `void insert(K key, V value)` | Inserts a key-value pair; throws `std::runtime_error` on duplicate key |
+| `const V& at(K key) const` | Accesses value by key; throws `std::out_of_range` if missing |
+| `void clear()` | Removes all entries and resets capacity to initial |
+
+### `StateSet`
+
+Bitmask utility for flexible bucket-state matching (planned use in tombstone-aware operations, iteration, etc.).
+
+## Yet to come
 - `operator[]`
 - `remove()` / `erase()` with tombstones
 - Iteration
