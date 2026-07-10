@@ -25,10 +25,11 @@ Open-addressing hash map with linear probing and power-of-two capacity.
 | `size_t size() const` | Number of key-value pairs stored |
 | `size_t capacity() const` | Current backing-array length |
 | `size_t initialCapacity() const` | Original capacity passed at construction |
-| `bool contains(K key) const` | Returns `true` if `key` exists |
+| `bool contains(K &key) const` | Returns `true` if `key` exists |
 | `void insert(K key, V value)` | Inserts a key-value pair; throws `std::runtime_error` on duplicate key |
-| `const V& at(K key) const` | Accesses value by key; throws `std::out_of_range` if missing |
+| `const V& at(K &key) const` | Accesses value by key; throws `std::out_of_range` if missing |
 | `void clear()` | Removes all entries and resets capacity to initial |
+| `V& operator[](K key)` | Returns a reference to a value, inserts if DNE |
 
 ### `StateSet`
 
