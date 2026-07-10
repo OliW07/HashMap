@@ -49,7 +49,7 @@ TEST_F(HashMapTest, Resize){
 }
 
 TEST_F(HashMapTest, SquareBrackets){
-    /*
+
     hashMap["Apples"] = 10;
     ASSERT_EQ(hashMap.at("Apples"), 10);
     ASSERT_EQ(hashMap["Apples"], 10);
@@ -57,7 +57,6 @@ TEST_F(HashMapTest, SquareBrackets){
     hashMap["Apples"]++;
     ASSERT_EQ(hashMap.at("Apples"), 11);
     ASSERT_EQ(hashMap["Apples"], 11);
-    */
 
 }
 

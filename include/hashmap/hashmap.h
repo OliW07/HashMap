@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <vector>
 #include <concepts>
+#include <utility>
 
 #include "detail/states.h"
 
@@ -57,6 +58,10 @@ private:
         return nullptr;
     }
 
+    Bucket* findEntry(size_t hash, const K& key) {
+        return const_cast<Bucket*>(std::as_const(*this).findEntry(hash, key));
+    }
+
     static Bucket* findSlot(Bucket* data, size_t capacity, size_t hash) {
         size_t index = hash & (capacity - 1);
         while (data[index].state == State::occupied)
@@ -87,6 +92,20 @@ private:
         data_ = std::move(newData);
     }
 
+    Bucket* insertHelper(size_t hash, K key){
+        if(size_ + 1 > (float)capacity_ * LOAD_FACTOR_THRESHOLD)
+            resize(size_t(capacity_ * RESIZE_FACTOR));
+        size_++;
+
+        Bucket *bucket = findSlot(data_.data(), capacity_, hash);
+
+        bucket->state = State::occupied;
+        bucket->hash = hash;
+        bucket->key = std::move(key);
+        
+        return bucket;
+    }
+
 public:
     HashMap(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity), capacity_(capacity){
         if(!std::has_single_bit(capacity))
@@ -99,7 +118,7 @@ public:
     size_t capacity() const { return capacity_; }
     size_t initialCapacity() const { return INITIAL_CAPACITY_; }
 
-    bool contains(K key) const {
+    bool contains(K &key) const {
         size_t hash = std::hash<K>{}(key);
         return findEntry(hash, key) != nullptr; 
     }
@@ -108,17 +127,9 @@ public:
         if(findEntry(hash, key))
             throw std::runtime_error("Cannot insert duplciate key");
         
-        if(size_ + 1 > (float)capacity_ * LOAD_FACTOR_THRESHOLD)
-            resize(size_t(capacity_ * RESIZE_FACTOR));
-        size_++;
-
-        Bucket *bucket = findSlot(data_.data(), capacity_, hash);
-
-        bucket->state = State::occupied;
-        bucket->hash = hash;
-        bucket->key = key;
-        bucket->value = value;
-        
+        Bucket* bucket = insertHelper(hash, key);
+        bucket->value = std::move(value);
+                
     }
 
     void clear() {
@@ -130,7 +141,7 @@ public:
         capacity_ = INITIAL_CAPACITY_;
         size_ = 0;
     }
-    const V& at(K key) const {
+    const V& at(K &key) const {
         size_t hash = std::hash<K>{}(key);
         const Bucket* bucket = findEntry(hash, key);
                 
@@ -139,5 +150,14 @@ public:
 
         return bucket->value;
     }
+    
+    V& operator[](K key){
+        size_t hash = std::hash<K>{}(key);
+        Bucket* bucket = findEntry(hash, key);
+        
+        if(!bucket)
+            bucket = insertHelper(hash, key);
+        return bucket->value;
 
+    }
 };
