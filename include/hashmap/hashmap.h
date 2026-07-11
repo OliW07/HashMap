@@ -118,7 +118,7 @@ public:
     size_t capacity() const { return capacity_; }
     size_t initialCapacity() const { return INITIAL_CAPACITY_; }
 
-    bool contains(K &key) const {
+    bool contains(const K& key) const {
         size_t hash = std::hash<K>{}(key);
         return findEntry(hash, key) != nullptr; 
     }
@@ -141,7 +141,7 @@ public:
         capacity_ = INITIAL_CAPACITY_;
         size_ = 0;
     }
-    const V& at(K &key) const {
+    const V& at(const K& key) const {
         size_t hash = std::hash<K>{}(key);
         const Bucket* bucket = findEntry(hash, key);
                 
