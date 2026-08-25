@@ -8,13 +8,16 @@
 
 #include "detail/states.h"
 
-template <typename T> 
-concept Hashable = requires(T a){
-    { std::hash<T>{}(a) } -> std::convertible_to<size_t>;
+template <typename H, typename K>
+concept Hashable = requires(H h, K k){
+    { h(k) } -> std::convertible_to<std::size_t>;
 };
 
-template <typename K, typename V>
-requires Hashable<K>
+template <typename K,
+         typename V,
+         typename Hash = std::hash<K>
+>
+requires Hashable<Hash, K>
 
 class HashMap {
     friend class HashMapTest_Resize_Test;
@@ -38,8 +41,10 @@ private:
     size_t size_ = 0;
 	std::vector<Bucket> data_;
 
+    Hash hasher_;
+
     size_t getIndex(K key) const {
-        size_t hash = std::hash<K>{}(key);
+        size_t hash = hasher_(key);
         return hash & (capacity_ - 1);
     }
     size_t getIndex(size_t hash) const {
@@ -83,7 +88,7 @@ private:
 
             if(bucket.state != State::occupied) continue;
 
-            bucket.hash = std::hash<K>{}(bucket.key);
+            bucket.hash = hasher_(bucket.key);
             Bucket* slot = findSlot(newData.data(), capacity_, bucket.hash);
             *slot = std::move(bucket);
 
@@ -107,7 +112,12 @@ private:
     }
 
 public:
-    HashMap(size_t capacity = DEFAULT_CAPACITY) : INITIAL_CAPACITY_(capacity), capacity_(capacity){
+    HashMap(size_t capacity = DEFAULT_CAPACITY,
+            const Hash& hasher = Hash()
+    ) :     INITIAL_CAPACITY_(capacity),
+            capacity_(capacity), 
+            hasher_(hasher)
+    {
         if(!std::has_single_bit(capacity))
             throw std::runtime_error("Capacity must be a power of two");
         
@@ -119,11 +129,11 @@ public:
     size_t initialCapacity() const { return INITIAL_CAPACITY_; }
 
     bool contains(const K& key) const {
-        size_t hash = std::hash<K>{}(key);
+        size_t hash = hasher_(key);
         return findEntry(hash, key) != nullptr; 
     }
     void insert(K key, V value) {
-        size_t hash = std::hash<K>{}(key);
+        size_t hash = hasher_(key);
         if(findEntry(hash, key))
             throw std::runtime_error("Cannot insert duplciate key");
         
@@ -142,7 +152,7 @@ public:
         size_ = 0;
     }
     const V& at(const K& key) const {
-        size_t hash = std::hash<K>{}(key);
+        size_t hash = hasher_(key);
         const Bucket* bucket = findEntry(hash, key);
                 
         if(!bucket)
@@ -152,7 +162,7 @@ public:
     }
     
     V& operator[](K key){
-        size_t hash = std::hash<K>{}(key);
+        size_t hash = hasher_(key);
         Bucket* bucket = findEntry(hash, key);
         
         if(!bucket)
