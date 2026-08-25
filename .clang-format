@@ -20,7 +20,7 @@ BinPackParameters: true
 BinPackArguments: true
 DerivePointerAlignment: false
 AllowAllParametersOfDeclarationOnNextLine: false
-Standard: c++23
+Standard: C++20
 IndentCaseLabels: true
 AlignAfterOpenBracket: Align
 AlignTrailingComments: true
