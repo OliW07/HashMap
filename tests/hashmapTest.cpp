@@ -59,6 +59,53 @@ TEST_F(HashMapTest, SquareBrackets){
     ASSERT_EQ(hashMap["Apples"], 11);
 
 }
+/*
+TEST_F(HashMapTest, Erase){
+    hashMap["Apples"] = 42;
+    ASSERT_EQ(hashMap.contains("Apples"), true);
+    hashMap.erase("Apples");
+    ASSERT_EQ(hashMap.contains("Apples"), false);
+}
+
+*/
+
+TEST_F(HashMapTest, Collision){
+
+    auto CursedHash = [](const std::string& s) -> size_t {
+        return 0zu;
+    };
+    
+    HashMap<std::string, int, decltype(CursedHash)> cursedHashMap(8);
+
+    cursedHashMap.insert("a", 1);
+    cursedHashMap.insert("b", 2);
+    cursedHashMap.insert("c", 3);
+    cursedHashMap.insert("d", 4);
+    cursedHashMap.insert("e", 5);
+
+    // All entries must be found despite same hash
+    
+    EXPECT_EQ(cursedHashMap.at("a"), 1);
+    EXPECT_EQ(cursedHashMap.at("b"), 2);
+    EXPECT_EQ(cursedHashMap.at("c"), 3);
+    EXPECT_EQ(cursedHashMap.at("d"), 4);
+    EXPECT_EQ(cursedHashMap.at("e"), 5);
+    
+    EXPECT_TRUE(cursedHashMap.contains("a"));
+    EXPECT_TRUE(cursedHashMap.contains("b"));
+    EXPECT_TRUE(cursedHashMap.contains("c"));
+    EXPECT_TRUE(cursedHashMap.contains("d"));
+    EXPECT_TRUE(cursedHashMap.contains("e"));
+    
+    // Should still throw error for duplicate key even if hidden at a different address
+
+    EXPECT_THROW(cursedHashMap.insert("b", 21), std::runtime_error);
+
+    EXPECT_EQ(cursedHashMap.size(), 5);
+
+}
+
+
 
 int main(int argc, char ** argv){
     testing::InitGoogleTest(&argc, argv);
