@@ -37,7 +37,7 @@ TEST_F(HashMapTest, ClearTable){
 
 TEST_F(HashMapTest, Resize){
     size_t resizeThresholdCapacity = static_cast<size_t>(hashMap.initialCapacity() * HashMap<std::string, int>::LOAD_FACTOR_THRESHOLD);
-    for(size_t i = 0; i < resizeThresholdCapacity; ++i){
+    for(size_t i = 0uz; i < resizeThresholdCapacity; ++i){
         hashMap.insert(std::to_string(i), i);
     }
 

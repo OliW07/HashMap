@@ -36,7 +36,6 @@ Open-addressing hash map with linear probing and power-of-two capacity.
 Bitmask utility for flexible bucket-state matching (planned use in tombstone-aware operations, iteration, etc.).
 
 ## Yet to come
-- `operator[]`
 - `remove()` / `erase()` with tombstones
 - Iteration
 - `const`-correct iteration / `at()` safety for non-default-constructible types

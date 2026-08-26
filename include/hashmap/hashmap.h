@@ -38,7 +38,7 @@ private:
     const size_t INITIAL_CAPACITY_;
 
 	size_t capacity_ = DEFAULT_CAPACITY;
-    size_t size_ = 0;
+    size_t size_ = 0uz;
 	std::vector<Bucket> data_;
 
     Hash hasher_;
