@@ -66,14 +66,14 @@ TEST_F(HashMapTest, Erase){
     hashMap.erase("Apples");
     ASSERT_EQ(hashMap.contains("Apples"), false);
 }
-
 */
 
-TEST_F(HashMapTest, Collision){
 
+TEST_F(HashMapTest, Collision){
+    
     auto CursedHash = [](const std::string& s) -> size_t {
         return 0zu;
-    q};
+    };
     
     HashMap<std::string, int, decltype(CursedHash)> cursedHashMap(8);
 
