@@ -73,7 +73,7 @@ TEST_F(HashMapTest, Collision){
 
     auto CursedHash = [](const std::string& s) -> size_t {
         return 0zu;
-    };
+    q};
     
     HashMap<std::string, int, decltype(CursedHash)> cursedHashMap(8);
 
