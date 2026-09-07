@@ -5,6 +5,7 @@
 #include <vector>
 #include <concepts>
 #include <utility>
+#include <unordered_map>
 
 #include "detail/states.h"
 
@@ -51,20 +52,24 @@ private:
         return hash & (capacity_ - 1);
     }
 
-    const Bucket* findEntry(size_t hash, const K& key) const {
-        size_t index = getIndex(hash);
-        while (data_[index].state != State::empty) {
-            if (data_[index].state == State::occupied &&
-                    data_[index].hash == hash &&
-                    data_[index].key == key)
-                return &data_[index];
-            index = (index + 1) & (capacity_ - 1);
-        }
-        return nullptr;
-    }
+    template <typename Self>
+    auto findEntry(this Self&& self, size_t hash, const K& key) {
 
-    Bucket* findEntry(size_t hash, const K& key) {
-        return const_cast<Bucket*>(std::as_const(*this).findEntry(hash, key));
+        /* Using std::vector's .data() here prevents UB accessing the type of data_[0] in the 
+         * case that the entry is empty if in the future for some reason the capacity is zero.
+         */
+
+        using PointerType = decltype(self.data_.data());
+        size_t index = self.getIndex(hash);
+
+        while (self.data_[index].state != State::empty) {
+            if (self.data_[index].state == State::occupied &&
+                    self.data_[index].hash == hash &&
+                    self.data_[index].key == key)
+                return &self.data_[index];
+            index = (index + 1) & (self.capacity_ - 1);
+        }
+        return static_cast<PointerType>(nullptr);
     }
 
     static Bucket* findSlot(Bucket* data, size_t capacity, size_t hash) {
